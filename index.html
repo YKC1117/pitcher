@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投手紀錄表</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        select, input[type="text"], input[type="number"] {
+            width: 100px;
+            text-align: center;
+        }
+        #table-container {
+            margin-top: 20px;
+        }
+        .result-table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .result-table th, .result-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <h2>投手紀錄表</h2>
+    <form id="form">
+        <table>
+            <thead>
+                <tr>
+                    <th>投手名字</th>
+                    <th>投球局數</th>
+                    <th>被安打數</th>
+                    <th>三振數</th>
+                    <th>四壞球數</th>
+                    <th>保送數</th>
+                    <th>失分</th>
+                    <th>被全壘打數</th>
+                </tr>
+            </thead>
+            <tbody id="pitchers-table-body">
+                <!-- 這裡會動態生成投手行 -->
+            </tbody>
+        </table>
+
+        <button type="button" onclick="calculateStats()">匯出統計數據.JPG</button>
+    </form>
+
+    <div id="result-container" style="display:none;">
+        <h3>統計結果</h3>
+        <table class="result-table" id="result-table">
+            <thead>
+                <tr>
+                    <th>投手名字</th>
+                    <th>投球局數</th>
+                    <th>被安打數</th>
+                    <th>三振數</th>
+                    <th>四壞球數</th>
+                    <th>保送數</th>
+                    <th>失分</th>
+                    <th>被全壘打數</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 統計結果將顯示在這裡 -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 動態生成 8 位投手的行
+        const tableBody = document.getElementById('pitchers-table-body');
+        for (let i = 1; i <= 8; i++) {
+            const row = document.createElement('tr');
+
+            // 投手名字欄位
+            const nameCell = document.createElement('td');
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.name = `name${i}`;
+            nameInput.placeholder = `投手 ${i} 名字`;
+            nameCell.appendChild(nameInput);
+            row.appendChild(nameCell);
+
+            // 投球局數 (整數1~9局和小數點1.1,1.2)
+            const inningsCell = document.createElement('td');
+            const inningsSelect = document.createElement('select');
+            inningsSelect.name = `innings${i}`;
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '0';
+            defaultOption.text = '0';
+            inningsSelect.appendChild(defaultOption);
+
+            // 添加 1 至 9 局選項
+            for (let j = 1; j <= 9; j++) {
+                const option = document.createElement('option');
+                option.value = `${j}`;
+                option.text = `${j} 局`;
+                inningsSelect.appendChild(option);
+
+                // 添加 1.1, 1.2, ..., 9.1, 9.2 選項
+                if (j < 9) {
+                    const optionDecimal1 = document.createElement('option');
+                    optionDecimal1.value = `${j}.1`;
+                    optionDecimal1.text = `${j}.1 局`;
+                    inningsSelect.appendChild(optionDecimal1);
+
+                    const optionDecimal2 = document.createElement('option');
+                    optionDecimal2.value = `${j}.2`;
+                    optionDecimal2.text = `${j}.2 局`;
+                    inningsSelect.appendChild(optionDecimal2);
+                }
+            }
+
+            inningsCell.appendChild(inningsSelect);
+            row.appendChild(inningsCell);
+
+            // 被安打數
+            const hitsCell = document.createElement('td');
+            const hitsInput = document.createElement('input');
+            hitsInput.type = 'number';
+            hitsInput.name = `hits${i}`;
+            hitsInput.placeholder = "被安打數";
+            hitsCell.appendChild(hitsInput);
+            row.appendChild(hitsCell);
+
+            // 三振數
+            const strikeoutsCell = document.createElement('td');
+            const strikeoutsInput = document.createElement('input');
+            strikeoutsInput.type = 'number';
+            strikeoutsInput.name = `strikeouts${i}`;
+            strikeoutsInput.placeholder = "三振數";
+            strikeoutsCell.appendChild(strikeoutsInput);
+            row.appendChild(strikeoutsCell);
+
+            // 四壞球數
+            const walksCell = document.createElement('td');
+            const walksInput = document.createElement('input');
+            walksInput.type = 'number';
+            walksInput.name = `walks${i}`;
+            walksInput.placeholder = "四壞球數";
+            walksCell.appendChild(walksInput);
+            row.appendChild(walksCell);
+
+            // 保送數
+            const bbCell = document.createElement('td');
+            const bbInput = document.createElement('input');
+            bbInput.type = 'number';
+            bbInput.name = `bb${i}`;
+            bbInput.placeholder = "保送數";
+            bbCell.appendChild(bbInput);
+            row.appendChild(bbCell);
+
+            // 失分
+            const earnedRunsCell = document.createElement('td');
+            const earnedRunsInput = document.createElement('input');
+            earnedRunsInput.type = 'number';
+            earnedRunsInput.name = `earnedRuns${i}`;
+            earnedRunsInput.placeholder = "失分";
+            earnedRunsCell.appendChild(earnedRunsInput);
+            row.appendChild(earnedRunsCell);
+
+            // 被全壘打數
+            const hrCell = document.createElement('td');
+            const hrInput = document.createElement('input');
+            hrInput.type = 'number';
+            hrInput.name = `hr${i}`;
+            hrInput.placeholder = "被全壘打數";
+            hrCell.appendChild(hrInput);
+            row.appendChild(hrCell);
+
+            // 加入到表格
+            tableBody.appendChild(row);
+        }
+
+        // 計算統計數據並顯示
+        function calculateStats() {
+            const resultTableBody = document.getElementById('result-table').getElementsByTagName('tbody')[0];
+            resultTableBody.innerHTML = ''; // 清空現有結果
+
+            for (let i = 1; i <= 8; i++) {
+                const nameInput = document.querySelector(`input[name="name${i}"]`);
+                const name = nameInput.value || `投手 ${i}`;
+                
+                const innings = document.querySelector(`select[name="innings${i}"]`).value;
+                const hits = document.querySelector(`input[name="hits${i}"]`).value;
+                const strikeouts = document.querySelector(`input[name="strikeouts${i}"]`).value;
+                const walks = document.querySelector(`input[name="walks${i}"]`).value;
+                const bb = document.querySelector(`input[name="bb${i}"]`).value;
+                const earnedRuns = document.querySelector(`input[name="earnedRuns${i}"]`).value;
+                const hr = document.querySelector(`input[name="hr${i}"]`).value;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${innings}</td>
+                    <td>${hits}</td>
+                    <td>${strikeouts}</td>
+                    <td>${walks}</td>
+                    <td>${bb}</td>
+                    <td>${earnedRuns}</td>
+                    <td>${hr}</td>
+                `;
+                resultTableBody.appendChild(row);
+            }
+
+            // 顯示統計結果
+            document.getElementById('result-container').style.display = 'block';
+            downloadResultImage();
+        }
+
+        // 匯出統計數據為圖片
+        function downloadResultImage() {
+            html2canvas(document.querySelector("#result-container")).then(function(canvas) {
+                const imgData = canvas.toDataURL("image/jpeg");
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = 'pitcher_stats.jpg';
+                link.click();
+            });
+        }
+    </script>
+
+</body>
+</html>
