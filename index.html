@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>投手紀錄表</title>
+    <title>球隊-投手紀錄表</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +22,7 @@
         th {
             background-color: #f4f4f4;
         }
-        select, input[type="text"], input[type="number"] {
+        select, input[type="text"] {
             width: 100px;
             text-align: center;
         }
@@ -44,7 +44,7 @@
 </head>
 <body>
 
-    <h2>投手紀錄表</h2>
+    <h2>球隊-投手紀錄表</h2>
     <form id="form">
         <table>
             <thead>
@@ -139,23 +139,36 @@
             inningsCell.appendChild(inningsSelect);
             row.appendChild(inningsCell);
 
-            // 其他欄位
-            const createNumberInputCell = (name, placeholder) => {
+            // 其他欄位，修改為下拉式選單
+            const createSelectCell = (name) => {
                 const cell = document.createElement('td');
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.name = `${name}${i}`;
-                input.placeholder = placeholder;
-                cell.appendChild(input);
+                const select = document.createElement('select');
+                select.name = `${name}${i}`;
+                
+                // 預設值0
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '0';
+                defaultOption.text = '0';
+                select.appendChild(defaultOption);
+
+                // 1 至 50 數字選項
+                for (let j = 1; j <= 50; j++) {
+                    const option = document.createElement('option');
+                    option.value = j;
+                    option.text = j;
+                    select.appendChild(option);
+                }
+
+                cell.appendChild(select);
                 return cell;
             };
 
-            row.appendChild(createNumberInputCell('hits', '被安打數'));
-            row.appendChild(createNumberInputCell('strikeouts', '三振數'));
-            row.appendChild(createNumberInputCell('walks', '四壞球數'));
-            row.appendChild(createNumberInputCell('bb', '觸身球數'));
-            row.appendChild(createNumberInputCell('errors', '隊友守備失誤'));
-            row.appendChild(createNumberInputCell('earnedRuns', '失分'));
+            row.appendChild(createSelectCell('hits'));
+            row.appendChild(createSelectCell('strikeouts'));
+            row.appendChild(createSelectCell('walks'));
+            row.appendChild(createSelectCell('bb'));
+            row.appendChild(createSelectCell('errors'));
+            row.appendChild(createSelectCell('earnedRuns'));
 
             tableBody.appendChild(row);
         }
@@ -170,12 +183,12 @@
                 const name = nameInput.value || `投手 ${i}`;
 
                 const innings = document.querySelector(`select[name="innings${i}"]`).value;
-                const hits = document.querySelector(`input[name="hits${i}"]`).value || 0;
-                const strikeouts = document.querySelector(`input[name="strikeouts${i}"]`).value || 0;
-                const walks = document.querySelector(`input[name="walks${i}"]`).value || 0;
-                const bb = document.querySelector(`input[name="bb${i}"]`).value || 0;
-                const errors = document.querySelector(`input[name="errors${i}"]`).value || 0;
-                const earnedRuns = document.querySelector(`input[name="earnedRuns${i}"]`).value || 0;
+                const hits = document.querySelector(`select[name="hits${i}"]`).value || 0;
+                const strikeouts = document.querySelector(`select[name="strikeouts${i}"]`).value || 0;
+                const walks = document.querySelector(`select[name="walks${i}"]`).value || 0;
+                const bb = document.querySelector(`select[name="bb${i}"]`).value || 0;
+                const errors = document.querySelector(`select[name="errors${i}"]`).value || 0;
+                const earnedRuns = document.querySelector(`select[name="earnedRuns${i}"]`).value || 0;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
